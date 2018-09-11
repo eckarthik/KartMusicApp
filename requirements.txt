@@ -1,0 +1,14 @@
+BeautifulSoup==3.2.1
+beautifulsoup4==4.6.3
+certifi==2018.1.18
+chardet==3.0.4
+Django==1.11.15
+idna==2.6
+mutagen==1.41.1
+numpy==1.14.2
+Pillow==5.0.0
+pytz==2018.5
+requests==2.18.4
+selenium==3.14.0
+urllib3==1.22
+gunicorn==19.9.0
