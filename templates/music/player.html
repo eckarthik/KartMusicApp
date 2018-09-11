@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+    <title>Title</title>
+    {% load staticfiles %}
+
+    <script type="text/javascript" src="{% static 'js/id3minimized.js' %}"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script>
+        $(document).ready(function() {
+                file = "{{ filename }}"
+                if(file=="/songs/flac.flac")
+                {
+                    {% if flac_tags %}
+                        {% if flac_tags.song_title %}
+                            song_title = "{{ flac_tags.song_title }}"
+                        {% endif %}
+                        {% if flac_tags.song_album %}
+                            song_album = "{{ flac_tags.song_album }}"
+                        {% endif %}
+                        {% if flac_tags.song_artist %}
+                            song_artist = "{{ flac_tags.song_artist }}"
+                        {% endif %}
+                    {% endif %}
+                    $("#song-title").text(song_title.replace("- TeluguWap.Net",""));
+                    $("#song-album").text(song_album);
+                    $("#song-artist").text(song_artist);
+                }
+                else
+                {
+                    ID3.loadTags("{{ filename }}", function() {
+                        var tags = ID3.getAllTags("{{ filename }}");
+                        //alert(tags.artist + " - " + tags.title + ", " + tags.album);
+                        temp_title = tags.title.toLowerCase()
+                        if(temp_title.search("teluguwap"))
+                        {
+                            song_title = tags.title.slice(0,temp_title.search("teluguwap"))
+                        }
+                        else
+                        {
+                            song_title = tags.title
+                        }
+                        $("#song-title").text(song_title.replace("-",""));
+                        $("#song-album").text(tags.album);
+                        $("#song-artist").text(tags.artist);
+                    });
+                }
+
+            var song = new Audio("{{ filename }}")
+            song.onloadedmetadata = function() {
+                //Converting to Minutes:Seconds format
+                minutes = parseInt(parseInt(song.duration)/60)
+                seconds = parseInt(song.duration)%60
+                if(seconds<10)
+                {
+                    seconds = "0"+seconds
+                }
+                $("span.duration").text(minutes+":"+seconds)
+                $("span.currentTime").text()
+            }
+            //song.currentTime = 220
+            song.ontimeupdate = function() {
+                current_width = $("span.progress").css("width").replace("px","")
+                calc = (parseInt(song.currentTime)/parseInt(song.duration))*current_width
+                current_progress = calc+"px"
+                $("span.progress-bar").css({width:current_progress})
+                //Converting to Minutes:Seconds format
+                minutes = parseInt(parseInt(song.currentTime)/60)
+                seconds = parseInt(song.currentTime)%60
+                if(seconds<10)
+                {
+                    seconds = "0"+seconds
+                }
+                $("span.currentTime").text(minutes+":"+seconds)
+            }
+
+            $("span.progress").click(function(event) {
+                current_width = $("span.progress").css("width").replace("px","")
+                var elm = $(this);
+                var xPos = event.pageX - elm.offset().left;
+                var yPos = event.pageY - elm.offset().top;
+               seek_time = (xPos/current_width)*parseInt(song.duration)
+               song.currentTime = seek_time
+            });
+            //Initial Player Controls
+            $("div.player-control-pause").hide();
+            $("div.player-control-mute").hide();
+
+
+            $("div.player-control-play").click(function(){
+                $("div.player-control-play").hide();
+                $("div.player-control-pause").show();
+                song.play();
+            });
+            $("div.player-control-pause").click(function(){
+                $("div.player-control-play").show();
+                $("div.player-control-pause").hide();
+                song.pause();
+            });
+            $("div.player-control-mute").click(function(){
+                $("div.player-control-mute").hide();
+                $("div.player-control-unmute").show();
+                song.volume = 1
+            });
+            $("div.player-control-unmute").click(function(){
+                $("div.player-control-unmute").hide();
+                $("div.player-control-mute").show();
+                song.volume = 0
+            });
+            $("div.player-control-repeat").click(function(){
+                song.loop = true
+                alert("Song repeat set")
+            });
+            $("div.player-control-forward").click(function(){
+                song.currentTime += 10
+            });
+            $("div.player-control-rewind").click(function(){
+                song.currentTime -= 10
+            });
+
+
+});
+    </script>
+</head>
+<body style="background-color:black;">
+<div class="row" style="margin:0;">
+    <div class="col">
+        <div id="player" class="mt-5" style="margin:auto;max-width:350px;">
+            <div class="player-album-art d-block">
+                <img id="picture" class="mx-auto" src="{{ album_art_location }}" style="max-width: 100%;"/>
+            </div>
+            <div class="player-footer px-3" style="background:white;max-width:100%;">
+                <div class="player-progress-bar" style="margin:auto;display:flex;">
+                    <span class="currentTime pr-2"></span>
+                    <span class="progress" style="width:100%;margin:auto;">
+                        <span class="progress-bar" role="progressbar" style="width:0px;">
+                        </span>
+                    </span>
+                    <span class="duration pl-2"></span>
+                </div>
+                <div class="song-details" style="margin:auto;display:block;">
+                    <b class="text-center d-block" id="song-title"></b>
+                    <b class="text-center d-block" id="song-album"></b>
+                    <b class="text-center d-block" id="song-artist"></b>
+                </div>
+                <div class="player-controls" style="margin:auto;width:100%;display:flex;">
+                    <div class="player-control-unmute mx-auto" style="display:inline;"><img src="https://png.icons8.com/ios/96/000000/medium-volume-filled.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-mute mx-auto"><img src="https://png.icons8.com/metro/96/000000/no-audio.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-rewind mx-auto"><img src="https://png.icons8.com/ios/96/000000/rewind-filled.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-play mx-auto"><img src="https://png.icons8.com/ios/100/000000/play-filled.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-pause mx-auto"><img src="https://png.icons8.com/ios/96/000000/pause-squared-filled.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-forward mx-auto"><img src="https://png.icons8.com/ios/96/000000/fast-forward-filled.png" style="width:30px;height:30px;"></div>
+                    <div class="player-control-repeat mx-auto"><img src="https://png.icons8.com/android/96/000000/repeat.png" style="width:30px;height:30px;"></div
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

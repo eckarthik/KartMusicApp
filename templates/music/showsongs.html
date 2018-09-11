@@ -1,0 +1,25 @@
+{% extends 'music/base.html' %}
+{% block body %}
+    <ul>
+        {% for k,v in songs.items %}
+            {{ v.song_title }}
+            {{ v.song_details|safe }}
+            {% for k2,v2 in v.items %}
+                {% for k3,v3 in v2.items %}
+                    <li>
+                        <form action="{% url 'music:fetchfile' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="dir" value="{{ v3.dir }}"/>
+                            <input type="hidden" name="file" value="{{ v3.file }}"/>
+                            <input type="hidden" name="cat" value="{{ v3.cat }}"/>
+                            <input type="hidden" name="action" value="{{ v3.action }}"/>
+                            <input type="hidden" name="song_link" value="{{ v3.song_link }}"/>
+                            <input type="submit" class="btn btn-primary" name="quality" value="{{ v3.quality }}"/>
+                        </form>
+                    </li>
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}
+
+    </ul>
+{% endblock %}

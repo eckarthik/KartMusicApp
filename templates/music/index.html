@@ -1,0 +1,17 @@
+{% extends 'music/base.html' %}
+{% block body %}
+    <form class="form py-5 px-3" style="max-width: 500px;margin:auto;display:block;" method="POST" action="{% url 'music:showlinks' %}">
+        {% csrf_token %}
+        <div class="card text-center text-white">
+            <h4 class="card-header bg-primary">Search for songs</h4>
+            <div class="card-body">
+                    <div class="form-group">
+                        <input type="text" name="song" class="form-control" placeholder="Enter song name"/>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary btn-block">Submit</button>
+                    </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}
